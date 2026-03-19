@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Seu Carrinho | Compra Inteligente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' },
+                        accent: { 400: '#f472b6', 500: '#ec4899' }
+                    },
+                    boxShadow: { 'app': '0 -4px 20px rgba(0,0,0,0.05)', 'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)' }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Ocultar barra de rolagem mas manter funcionalidade */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+
+        /* Estilos de Impressão e PDF */
+        @media print {
+            body {
+                background: white !important;
+                font-size: 12pt;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .print-only {
+                display: block !important;
+            }
+
+            .list-item {
+                page-break-inside: avoid;
+                border-bottom: 1px solid #ddd;
+                padding: 10px 0;
+            }
+
+            .print-checkbox {
+                width: 18px;
+                height: 18px;
+                border: 2px solid #000;
+                display: inline-block;
+                margin-right: 15px;
+                border-radius: 4px;
+                vertical-align: middle;
+            }
+
+            .item-text {
+                display: inline-block;
+                vertical-align: middle;
+            }
+
+            .shadow-sm,
+            .shadow-app {
+                box-shadow: none !important;
+            }
+
+            header {
+                border-bottom: 2px solid #000;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+            }
+        }
+
+        /* Glassmorphism para Modais e Navbar */
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Animações fluidas */
+        .page-transition {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide-up {
+            animation: slideUp 0.3s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Custom Checkbox CSS */
+        .cbx {
+            -webkit-user-select: none;
+            user-select: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .cbx span {
+            display: inline-block;
+            vertical-align: middle;
+            transform: translate3d(0, 0, 0);
+        }
+
+        .cbx span:first-child {
+            position: relative;
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            transform: scale(1);
+            vertical-align: middle;
+            border: 2px solid #cbd5e1;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cbx span:first-child svg {
+            position: absolute;
+            z-index: 1;
+            top: 4px;
+            left: 3px;
+            fill: none;
+            stroke: white;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 16px;
+            stroke-dashoffset: 16px;
+            transition: all 0.3s ease;
+            transition-delay: 0.1s;
+            transform: translate3d(0, 0, 0);
+        }
+
+        .cbx span:last-child {
+            padding-left: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .cbx:hover span:first-child {
+            border-color: #3b82f6;
+        }
+
+        .inp-cbx:checked+.cbx span:first-child {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            animation: wave 0.4s ease;
+        }
+
+        .inp-cbx:checked+.cbx span:first-child svg {
+            stroke-dashoffset: 0;
+        }
+
+        .inp-cbx:checked+.cbx span:last-child {
+            color: #94a3b8;
+            text-decoration: line-through;
+        }
+
+        @keyframes wave {
+            50% {
+                transform: scale(0.9);
+            }
+        }
+
+        /* Autocomplete custom dropdown */
+        .autocomplete-items {
+            position: absolute;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 4px;
+        }
+
+        .autocomplete-items div {
+            padding: 12px 16px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .autocomplete-items div:hover {
+            background-color: #f8fafc;
+            color: #2563eb;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-slate-50 text-slate-800 antialiased h-screen overflow-hidden flex flex-col selection:bg-brand-500 selection:text-white">
+
+    <header class="glass sticky top-0 z-40 px-5 py-4 flex justify-between items-center no-print">
+        <div class="flex items-center gap-2">
+            <div
+                class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+                <i class="ph-bold ph-shopping-cart text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900 leading-none">Seu<span
+                        class="text-brand-600">Carrinho</span></h1>
+                <p class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold" id="header-subtitle">Compra
+                    Inteligente</p>
+            </div>
+        </div>
+
+        <div id="topbar-actions-home">
+            <button onclick="openModal('modal-nova-lista')"
+                class="bg-slate-900 text-white p-2.5 rounded-full hover:bg-slate-800 transition active:scale-95">
+                <i class="ph ph-plus text-lg"></i>
+            </button>
+        </div>
+        <div id="topbar-actions-list" class="hidden flex gap-3">
+            <button onclick="window.print()"
+                class="text-slate-600 bg-slate-100 p-2.5 rounded-full hover:bg-slate-200 transition active:scale-95 flex items-center justify-center">
+                <i class="ph ph-printer text-lg"></i>
+            </button>
+            <button onclick="voltarParaHome()"
+                class="bg-slate-200 text-slate-700 px-4 py-2 rounded-full font-medium text-sm hover:bg-slate-300 transition active:scale-95">
+                Voltar
+            </button>
+        </div>
+    </header>
+
+    <div class="hidden print-only mb-6">
+        <h1 class="text-2xl font-bold" id="print-title">Lista de Compras</h1>
+        <p class="text-gray-500 text-sm">Gerado pelo sistema web. Válida até: <span id="print-date"></span></p>
+    </div>
+
+    <main class="flex-1 overflow-y-auto w-full max-w-2xl mx-auto p-5 pb-32">
+
+        <div id="view-home" class="page-transition">
+
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900">Suas Listas</h2>
+                    <p class="text-sm text-slate-500">Listas expiram automaticamente.</p>
+                </div>
+            </div>
+
+            <div class="grid gap-4">
+
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:border-brand-300 transition-colors cursor-pointer group"
+                    onclick="abrirLista('Churrasco de Domingo')">
+                    <div class="flex justify-between items-start mb-4">
+                        <div
+                            class="w-12 h-12 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                            🥩</div>
+                        <div
+                            class="bg-slate-100 text-slate-600 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">
+                            <i class="ph ph-clock"></i> Expira em 2 dias
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-800 mb-1">Churrasco de Domingo</h3>
+                    <div class="flex items-center justify-between mt-4 border-t border-slate-50 pt-4">
+                        <div class="flex items-center gap-2 text-sm text-slate-500">
+                            <i class="ph ph-check-circle text-brand-500 text-lg"></i> 5/12 itens pegos
+                        </div>
+                        <i class="ph-bold ph-caret-right text-slate-300 group-hover:text-brand-500"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:border-brand-300 transition-colors cursor-pointer group"
+                    onclick="abrirLista('Compras do Mês')">
+                    <div class="flex justify-between items-start mb-4">
+                        <div
+                            class="w-12 h-12 rounded-full bg-brand-50 text-brand-500 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                            🛒</div>
+                        <div
+                            class="bg-red-50 text-red-600 text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">
+                            <i class="ph ph-warning-circle"></i> Expira hoje 18:00
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-800 mb-1">Compras do Mês</h3>
+                    <div class="flex items-center justify-between mt-4 border-t border-slate-50 pt-4">
+                        <div class="flex items-center gap-2 text-sm text-slate-500">
+                            <i class="ph ph-check-circle text-brand-500 text-lg"></i> 0/45 itens pegos
+                        </div>
+                        <i class="ph-bold ph-caret-right text-slate-300 group-hover:text-brand-500"></i>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <div id="view-list" class="hidden page-transition opacity-0 no-print">
+
+            <div
+                class="bg-brand-600 rounded-3xl p-6 text-white mb-8 shadow-lg shadow-brand-500/20 relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+                <h2 class="text-3xl font-bold mb-1" id="titulo-lista-ativa">Churrasco</h2>
+                <p class="text-brand-100 text-sm flex items-center gap-1 mb-5">
+                    <i class="ph ph-hourglass-high"></i> Expira em: 24/12/2026 às 14:00
+                </p>
+
+                <div class="w-full bg-brand-900/40 rounded-full h-2.5 mb-2 backdrop-blur-sm">
+                    <div class="bg-white h-2.5 rounded-full" style="width: 45%"></div>
+                </div>
+                <div class="flex justify-between text-xs font-medium text-brand-100">
+                    <span>Progresso</span>
+                    <span>45% concluído</span>
+                </div>
+            </div>
+
+            <form id="form-item" autocomplete="off"
+                class="bg-white p-2 rounded-2xl shadow-glass border border-slate-200 mb-8 flex flex-wrap sm:flex-nowrap gap-2 sticky top-[80px] z-30">
+
+                <div class="relative flex-grow min-w-[50%]">
+                    <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                        <i class="ph ph-magnifying-glass text-slate-400"></i>
+                    </div>
+                    <input type="text" id="input-produto" placeholder="O que você precisa?" required
+                        class="w-full bg-slate-50 text-slate-900 text-sm rounded-xl block pl-10 pr-3 py-3.5 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                </div>
+
+                <div
+                    class="flex flex-grow sm:flex-grow-0 min-w-[120px] bg-slate-50 rounded-xl focus-within:ring-2 focus-within:ring-brand-500 focus-within:bg-white transition-all">
+                    <input type="number" id="input-qtd" placeholder="Qtd" value="1" min="0.1" step="any" required
+                        class="w-16 bg-transparent text-center text-sm font-medium text-slate-900 py-3.5 focus:outline-none pl-2 border-r border-slate-200">
+
+                    <select id="input-unidade"
+                        class="bg-transparent text-slate-600 text-sm font-medium py-3.5 px-2 focus:outline-none appearance-none cursor-pointer w-full text-center">
+                        <option value="un">Un</option>
+                        <option value="kg">Kg</option>
+                        <option value="g">g</option>
+                        <option value="L">L</option>
+                        <option value="cx">Cx</option>
+                    </select>
+                </div>
+
+                <button type="submit"
+                    class="bg-brand-600 text-white rounded-xl px-5 py-3.5 font-semibold hover:bg-brand-700 active:scale-95 transition-all flex items-center justify-center min-w-[60px]">
+                    <i class="ph-bold ph-plus text-xl sm:hidden"></i>
+                    <span class="hidden sm:inline">Adicionar</span>
+                </button>
+            </form>
+
+            <div class="space-y-3" id="lista-de-itens">
+                <div
+                    class="list-item flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-100 slide-up group">
+                    <div class="hidden print-only print-checkbox"></div>
+
+                    <div class="flex items-center gap-3 w-full no-print">
+                        <input type="checkbox" id="cbx-1" class="inp-cbx hidden" />
+                        <label for="cbx-1" class="cbx flex-1">
+                            <span>
+                                <svg width="12px" height="9px" viewBox="0 0 12 9">
+                                    <polyline points="1 5 4 8 11 1"></polyline>
+                                </svg>
+                            </span>
+                            <span class="item-text text-slate-700 font-medium text-lg w-full flex justify-between pr-4">
+                                Arroz Branco
+                                <span
+                                    class="text-slate-400 bg-slate-50 px-2 py-0.5 rounded-lg text-sm font-semibold border border-slate-100">2
+                                    kg</span>
+                            </span>
+                        </label>
+                    </div>
+
+                    <button
+                        class="no-print text-slate-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition-colors opacity-100 sm:opacity-0 group-hover:opacity-100">
+                        <i class="ph-fill ph-trash text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="list-item flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-100 slide-up group"
+                    style="animation-delay: 0.1s;">
+                    <div class="hidden print-only print-checkbox"></div>
+                    <div class="flex items-center gap-3 w-full no-print">
+                        <input type="checkbox" id="cbx-2" class="inp-cbx hidden" checked />
+                        <label for="cbx-2" class="cbx flex-1">
+                            <span>
+                                <svg width="12px" height="9px" viewBox="0 0 12 9">
+                                    <polyline points="1 5 4 8 11 1"></polyline>
+                                </svg>
+                            </span>
+                            <span class="item-text text-slate-700 font-medium text-lg w-full flex justify-between pr-4">
+                                Detergente Líquido
+                                <span
+                                    class="text-slate-400 bg-slate-100 px-2 py-0.5 rounded-lg text-sm font-semibold border border-slate-200">3
+                                    un</span>
+                            </span>
+                        </label>
+                    </div>
+                    <button
+                        class="no-print text-slate-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition-colors opacity-100 sm:opacity-0 group-hover:opacity-100">
+                        <i class="ph-fill ph-trash text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+
+    <div id="modal-nova-lista" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center hidden no-print">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
+            onclick="closeModal('modal-nova-lista')"></div>
+
+        <div class="bg-white w-full max-w-md p-6 rounded-t-3xl sm:rounded-3xl shadow-2xl relative z-10 slide-up">
+
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-slate-900">Nova Lista</h3>
+                <button onclick="closeModal('modal-nova-lista')"
+                    class="text-slate-400 hover:text-slate-700 bg-slate-100 p-2 rounded-full">
+                    <i class="ph-bold ph-x"></i>
+                </button>
+            </div>
+
+            <form id="form-nova-lista" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Nome da Lista</label>
+                    <input type="text" placeholder="Ex: Aniversário da Maria" required
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Data de Uso</label>
+                        <input type="date" required
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-700 focus:ring-2 focus:ring-brand-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Hora (Até)</label>
+                        <input type="time" required
+                            class="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-700 focus:ring-2 focus:ring-brand-500 outline-none transition-all">
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 text-blue-800 text-xs p-3 rounded-xl flex gap-2 items-start mt-2">
+                    <i class="ph-fill ph-info text-blue-500 text-lg"></i>
+                    <p>Por segurança e limpeza do sistema, esta lista e seus itens serão <strong>deletados
+                            permanentemente</strong> após a data e hora informadas.</p>
+                </div>
+
+                <button type="button" onclick="salvarCriarLista()"
+                    class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl mt-4 hover:bg-brand-600 transition-colors active:scale-95 shadow-lg shadow-slate-900/20">
+                    Criar e Começar a Adicionar
+                </button>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        // --- NAVEGAÇÃO ENTRE TELAS ---
+        const viewHome = document.getElementById('view-home');
+        const viewList = document.getElementById('view-list');
+        const actionHome = document.getElementById('topbar-actions-home');
+        const actionList = document.getElementById('topbar-actions-list');
+        const headerSubtitle = document.getElementById('header-subtitle');
+
+        function abrirLista(nome) {
+            // Animação de transição
+            viewHome.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                viewHome.classList.add('hidden');
+                viewList.classList.remove('hidden');
+
+                // Força um reflow para animação rodar
+                void viewList.offsetWidth;
+                viewList.classList.remove('opacity-0');
+
+                // Altera Topbar
+                actionHome.classList.add('hidden');
+                actionList.classList.remove('hidden');
+                headerSubtitle.innerText = "Editando Lista";
+
+                // Preenche dados falsos para demonstração
+                document.getElementById('titulo-lista-ativa').innerText = nome;
+                document.getElementById('print-title').innerText = "Lista: " + nome;
+
+            }, 200);
+        }
+
+        function voltarParaHome() {
+            viewList.classList.add('opacity-0');
+            setTimeout(() => {
+                viewList.classList.add('hidden');
+                viewHome.classList.remove('hidden');
+
+                void viewHome.offsetWidth;
+                viewHome.classList.remove('opacity-0', 'scale-95');
+
+                actionList.classList.add('hidden');
+                actionHome.classList.remove('hidden');
+                headerSubtitle.innerText = "Gestor Inteligente";
+            }, 200);
+        }
+
+        // --- CONTROLE DE MODAL ---
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.remove('hidden');
+        }
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.add('hidden');
+        }
+        function salvarCriarLista() {
+            closeModal('modal-nova-lista');
+            abrirLista('Nova Lista (Sem Título)');
+        }
+
+        // --- LÓGICA DE AUTOCOMPLETE (Banco de Dados Simulado) ---
+        const bancoDeAlimentos = [
+            "Arroz Branco", "Arroz Integral", "Açúcar Refinado", "Açúcar Mascavo", "Azeite de Oliva",
+            "Alface", "Alho", "Batata", "Batata Doce", "Banana Prata", "Banana Nanica", "Café em Pó",
+            "Carne Moída", "Cebola", "Cenoura", "Detergente Líquido", "Desinfetante", "Feijão Carioca",
+            "Feijão Preto", "Farinha de Trigo", "Leite Integral", "Leite Desnatado", "Limão", "Macarrão",
+            "Manteiga", "Margarina", "Maçã", "Ovos Brancos", "Óleo de Soja", "Pão Francês", "Pão de Forma",
+            "Papel Higiênico", "Peito de Frango", "Queijo Mussarela", "Refrigerante", "Sabão em Pó", "Sabonete",
+            "Sal Refinado", "Tomate"
+        ];
+
+        function autocomplete(inp, arr) {
+            let currentFocus;
+
+            inp.addEventListener("input", function (e) {
+                let a, b, i, val = this.value;
+                closeAllLists();
+                if (!val) { return false; }
+                currentFocus = -1;
+
+                a = document.createElement("DIV");
+                a.setAttribute("id", this.id + "autocomplete-list");
+                a.setAttribute("class", "autocomplete-items");
+                this.parentNode.appendChild(a);
+
+                let matches = 0;
+                for (i = 0; i < arr.length; i++) {
+                    // Verifica se a string digitada está em qualquer parte do nome do produto (Case Insensitive)
+                    if (arr[i].toUpperCase().includes(val.toUpperCase()) && matches < 5) {
+                        b = document.createElement("DIV");
+                        // Destaca a parte digitada
+                        let startPos = arr[i].toUpperCase().indexOf(val.toUpperCase());
+                        b.innerHTML = arr[i].substring(0, startPos);
+                        b.innerHTML += "<strong>" + arr[i].substring(startPos, startPos + val.length) + "</strong>";
+                        b.innerHTML += arr[i].substring(startPos + val.length);
+
+                        b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+                        b.addEventListener("click", function (e) {
+                            inp.value = this.getElementsByTagName("input")[0].value;
+                            closeAllLists();
+                            document.getElementById('input-qtd').focus(); // Pula pro próximo campo
+                        });
+                        a.appendChild(b);
+                        matches++;
+                    }
+                }
+            });
+
+            function closeAllLists(elmnt) {
+                let x = document.getElementsByClassName("autocomplete-items");
+                for (let i = 0; i < x.length; i++) {
+                    if (elmnt != x[i] && elmnt != inp) {
+                        x[i].parentNode.removeChild(x[i]);
+                    }
+                }
+            }
+            document.addEventListener("click", function (e) {
+                closeAllLists(e.target);
+            });
+        }
+
+        // Inicializa o Autocomplete
+        autocomplete(document.getElementById("input-produto"), bancoDeAlimentos);
+
+        // --- ADICIONAR NOVO ITEM NA LISTA ---
+        document.getElementById('form-item').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const nome = document.getElementById('input-produto').value;
+            const qtd = document.getElementById('input-qtd').value;
+            const un = document.getElementById('input-unidade').value;
+            const id = 'cbx-' + Date.now(); // ID único pro checkbox
+
+            const novoItemHTML = `
+                <div class="list-item flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-100 slide-up group">
+                    <div class="hidden print-only print-checkbox"></div>
+                    <div class="flex items-center gap-3 w-full no-print">
+                        <input type="checkbox" id="${id}" class="inp-cbx hidden" />
+                        <label for="${id}" class="cbx flex-1">
+                            <span>
+                                <svg width="12px" height="9px" viewBox="0 0 12 9"><polyline points="1 5 4 8 11 1"></polyline></svg>
+                            </span>
+                            <span class="item-text text-slate-700 font-medium text-lg w-full flex justify-between pr-4">
+                                ${nome} 
+                                <span class="text-slate-400 bg-slate-50 px-2 py-0.5 rounded-lg text-sm font-semibold border border-slate-100">${qtd} ${un}</span>
+                            </span>
+                        </label>
+                    </div>
+                    <button class="no-print text-slate-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition-colors opacity-100 sm:opacity-0 group-hover:opacity-100" onclick="this.parentElement.remove()">
+                        <i class="ph-fill ph-trash text-xl"></i>
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('lista-de-itens').insertAdjacentHTML('afterbegin', novoItemHTML);
+
+            // Limpa form
+            document.getElementById('input-produto').value = '';
+            document.getElementById('input-qtd').value = '1';
+            document.getElementById('input-produto').focus();
+        });
+
+    </script>
+</body>
+
+</html>

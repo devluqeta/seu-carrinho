@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MercadoPro - Sua Lista de Compras Inteligente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10b981', // Emerald 500
+                        primaryDark: '#059669', // Emerald 600
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilo para item riscado com transição suave */
+        .item-checked span.item-name {
+            text-decoration: line-through;
+            color: #9ca3af;
+            /* gray-400 */
+            transition: all 0.3s ease;
+        }
+
+        .item-checked {
+            background-color: #f9fafb;
+            /* gray-50 */
+            opacity: 0.7;
+        }
+
+        /* Custom scrollbar para a lista */
+        #lista-containers::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #lista-containers::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        #lista-containers::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            /* gray-300 */
+            border-radius: 10px;
+        }
+
+        #lista-containers::-webkit-scrollbar-thumb:hover {
+            background: #10b981;
+        }
+
+        /* Animação de entrada */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 antialiased min-h-screen font-sans">
+
+    <div class="py-6 md:py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+
+        <header
+            class="mb-8 p-6 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-3">
+                    <div class="bg-primary p-2.5 rounded-xl text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-gray-950 tracking-tighter">Seu<span
+                            class="text-primary">Carrinho</span></h1>
+                </div>
+                <p class="text-gray-600 mt-1 pl-12">Sua lista de compras inteligente.</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 w-full md:w-auto">
+                <div class="bg-gray-100 p-4 rounded-xl border border-gray-200 text-center">
+                    <span class="text-xs text-gray-500 uppercase font-semibold tracking-wider">Itens</span>
+                    <p id="resumo-progresso" class="text-2xl font-bold text-gray-950">0 / 0</p>
+                </div>
+                <div class="bg-primary/10 p-4 rounded-xl border border-primary/20 text-center">
+                    <span class="text-xs text-primaryDark uppercase font-semibold tracking-wider">Total Est.</span>
+                    <p id="resumo-total" class="text-2xl font-bold text-primaryDark">R$ 0,00</p>
+                </div>
+            </div>
+        </header>
+
+        <div
+            class="sticky top-4 z-10 mb-8 p-4 bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100">
+            <form id="form-adicionar" class="grid grid-cols-12 gap-3">
+                <div class="col-span-12 md:col-span-5 relative">
+                    <input type="text" id="input-nome" required
+                        class="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary transition outline-none"
+                        placeholder="Ex: Leite Integral, Arroz 5kg...">
+                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="col-span-6 md:col-span-2 relative">
+                    <input type="number" id="input-qtd" min="1" value="1" step="any" required
+                        class="w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary transition outline-none"
+                        placeholder="Qtd">
+                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">Qty</div>
+                </div>
+
+                <div class="col-span-6 md:col-span-2 relative">
+                    <input type="number" id="input-preco" min="0" step="0.01"
+                        class="w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary transition outline-none"
+                        placeholder="0,00">
+                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">R$</div>
+                </div>
+
+                <div class="col-span-12 md:col-span-2">
+                    <select id="input-categoria"
+                        class="w-full h-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary transition outline-none bg-white text-gray-700 appearance-none cursor-pointer">
+                        <option value="💡 Geral" selected>💡 Geral</option>
+                        <option value="🥦 Hortifruti">🥦 Hortifruti</option>
+                        <option value="🥩 Açougue">🥩 Açougue</option>
+                        <option value="🥛 Laticínios">🥛 Laticínios</option>
+                        <option value="🍞 Padaria">🍞 Padaria</option>
+                        <option value="🧼 Limpeza">🧼 Limpeza</option>
+                        <option value="🧸 Outros">🧸 Outros</option>
+                    </select>
+                </div>
+
+                <div class="col-span-12 md:col-span-1">
+                    <button type="submit"
+                        class="w-full h-full bg-primary hover:bg-primaryDark text-white font-bold py-3 rounded-xl transition duration-150 flex items-center justify-center gap-2 group">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="h-6 w-6 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span class="md:hidden">Adicionar</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <main id="lista-containers" class="space-y-6 max-h-[calc(100vh-280px)] overflow-y-auto pr-2">
+            <div id="estado-vazio" class="text-center py-16 animate-fadeIn">
+                <img src="https://illustrations.popsy.co/emerald/shopping-cart.svg" alt="Carrinho Vazio"
+                    class="h-48 mx-auto mb-6">
+                <h3 class="text-xl font-semibold text-gray-800">Sua lista está vazia</h3>
+                <p class="text-gray-500 mt-2">Use o campo acima para adicionar itens.</p>
+            </div>
+        </main>
+
+    </div>
+
+    <template id="template-item">
+        <div
+            class="item-row flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-gray-200 transition group animate-fadeIn">
+            <div class="flex items-center h-6">
+                <input type="checkbox"
+                    class="item-checkbox h-6 w-6 rounded-full border-2 border-gray-300 text-primary focus:ring-primary cursor-pointer transition">
+            </div>
+
+            <div class="flex-grow grid grid-cols-12 items-center gap-2">
+                <div class="col-span-7 md:col-span-8">
+                    <span class="item-name text-lg font-medium text-gray-950 break-words">Nome do Item</span>
+                </div>
+                <div
+                    class="col-span-5 md:col-span-4 text-right flex flex-col items-end md:flex-row md:justify-end md:gap-4">
+                    <span
+                        class="item-qtd-display text-sm font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">1x</span>
+                    <span class="item-total-display text-base font-semibold text-gray-800">R$ 0,00</span>
+                </div>
+            </div>
+
+            <button
+                class="btn-deletar text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition opacity-0 group-hover:opacity-100 focus:opacity-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                  
+                </svg>
+            </button>
+        </div>
+    </template>
+
+    <script>
+        // --- ESTADO DA APLICAÇÃO ---
+        let items = [];
+
+        // --- ELEMENTOS DOM ---
+        const form = document.getElementById('form-adicionar');
+        const inputNome = document.getElementById('input-nome');
+        const inputQtd = document.getElementById('input-qtd');
+        const inputPreco = document.getElementById('input-preco');
+        const inputCategoria = document.getElementById('input-categoria');
+        const listaContainers = document.getElementById('lista-containers');
+        const estadoVazio = document.getElementById('estado-vazio');
+        const resumoProgresso = document.getElementById('resumo-progresso');
+        const resumoTotal = document.getElementById('resumo-total');
+        const templateItem = document.getElementById('template-item');
+
+        // --- FUNÇÕES ---
+
+        // Formata dinheiro para BRL
+        const formatarMoeda = (valor) => {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        };
+
+        // Atualiza os contadores no Header
+        const atualizarResumo = () => {
+            const totalItens = items.length;
+            const itensCheckados = items.filter(item => item.checked).length;
+            const valorTotal = items.reduce((sum, item) => sum + (item.checked ? 0 : (item.qtd * item.preco)), 0);
+            // Nota: Decidi somar apenas o que NÃO foi comprado ainda para o total estimado.
+
+            resumoProgresso.textContent = `${itensCheckados} / ${totalItens}`;
+            resumoTotal.textContent = formatarMoeda(valorTotal);
+
+            // Mostra/Esconde estado vazio
+            if (totalItens === 0) {
+                estadoVazio.classList.remove('hidden');
+            } else {
+                estadoVazio.classList.add('hidden');
+            }
+        };
+
+        // Renderiza a lista inteira agrupada por categoria
+        const renderizarLista = () => {
+            // Limpa containers atuais, mantendo o estado vazio se necessário
+            const content = items.length === 0 ? estadoVazio.outerHTML : '';
+            listaContainers.innerHTML = content;
+            if (items.length === 0) return;
+
+            // Agrupa itens
+            const agrupado = items.reduce((acc, item) => {
+                const cat = item.checked ? '✅ Comprados' : item.categoria;
+                if (!acc[cat]) acc[cat] = [];
+                acc[cat].push(item);
+                return acc;
+            }, {});
+
+            // Ordena categorias (Geral primeiro, Comprados por último)
+            const nomesCategorias = Object.keys(agrupado).sort((a, b) => {
+                if (a === '✅ Comprados') return 1;
+                if (b === '✅ Comprados') return -1;
+                if (a === '💡 Geral') return -1;
+                if (b === '💡 Geral') return 1;
+                return a.localeCompare(b);
+            });
+
+            // Cria os HTMLs
+            nomesCategorias.forEach(catNome => {
+                // Cria Section da Categoria
+                const section = document.createElement('section');
+                section.className = "mb-8 animate-fadeIn";
+
+                const header = document.createElement('h2');
+                header.className = "text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 pl-1";
+                header.textContent = catNome;
+                section.appendChild(header);
+
+                const divItens = document.createElement('div');
+                divItens.className = "space-y-3";
+                section.appendChild(divItens);
+
+                // Adiciona Itens à section
+                agrupado[catNome].forEach(item => {
+                    const clone = templateItem.content.cloneNode(true);
+                    const row = clone.querySelector('.item-row');
+
+                    // Preenche dados
+                    row.querySelector('.item-name').textContent = item.nome;
+                    row.querySelector('.item-qtd-display').textContent = `${item.qtd}x`;
+
+                    if (item.preco > 0) {
+                        row.querySelector('.item-total-display').textContent = formatarMoeda(item.qtd * item.preco);
+                    } else {
+                        row.querySelector('.item-total-display').textContent = '--';
+                        row.querySelector('.item-total-display').classList.add('text-gray-400');
+                    }
+
+                    // Setup Checkbox
+                    const checkbox = row.querySelector('.item-checkbox');
+                    checkbox.checked = item.checked;
+                    if (item.checked) row.classList.add('item-checked');
+
+                    // Evento Check
+                    checkbox.addEventListener('change', () => toggleCheckItem(item.id));
+
+                    // Evento Deletar
+                    row.querySelector('.btn-deletar').addEventListener('click', () => deletarItem(item.id));
+
+                    divItens.appendChild(clone);
+                });
+
+                listaContainers.appendChild(section);
+            });
+
+            atualizarResumo();
+        };
+
+        // Ações
+        const adicionarItem = (e) => {
+            e.preventDefault();
+
+            const novoItem = {
+                id: Date.now(),
+                nome: inputNome.value,
+                qtd: parseFloat(inputQtd.value),
+                preco: parseFloat(inputPreco.value) || 0,
+                categoria: inputCategoria.value,
+                checked: false
+            };
+
+            items.push(novoItem);
+            form.reset();
+            inputNome.focus();
+            inputQtd.value = 1; // Reseta qtd para 1 padrão
+            inputCategoria.value = "💡 Geral";
+
+            renderizarLista();
+        };
+
+        const toggleCheckItem = (id) => {
+            items = items.map(item => {
+                if (item.id === id) return { ...item, checked: !item.checked };
+                return item;
+            });
+            // Re-renderiza para mover o item de categoria (para 'Comprados')
+            renderizarLista();
+        };
+
+        const deletarItem = (id) => {
+            // Animação simples antes de remover do estado
+            const row = document.querySelector(`[data-id="${id}"]`); // precisaria adicionar data-id na renderização
+            // Para simplificar sem complicar o DOM, removemos direto:
+            items = items.filter(item => item.id !== id);
+            renderizarLista();
+        };
+
+
+        // --- EVENT LISTENERS ---
+        form.addEventListener('submit', adicionarItem);
+
+        // --- INICIALIZAÇÃO ---
+        atualizarResumo(); // Garante estado vazio inicial
+
+    </script>
+</body>
+
+</html>
