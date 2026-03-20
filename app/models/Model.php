@@ -2,27 +2,21 @@
 
 abstract class Model
 {
-    protected $table; // TABELA
+    protected $table;
     protected $primaryKey = 'id';
-    protected $fillable = []; // CAMPOS DA TABELA QUE DEVEM INSERIR (INSERT)
+    protected $fillable = [];
 
     protected function db()
     {
-        return Database::getConnection();
+        return \Database::getConnection();
     }
 
-    // =======================
-    // FUNÇÃO SELECIONA TUDA
-    // =======================
     public function all()
     {
         $stmt = $this->db()->query("SELECT * FROM {$this->table}");
         return $stmt->fetchAll();
     }
 
-    // =================
-    // FUNÇÃO DE BUSCA
-    // =================
     public function find($id)
     {
         $stmt = $this->db()->prepare(
@@ -32,9 +26,6 @@ abstract class Model
         return $stmt->fetch();
     }
 
-    // ==============
-    // FUNÇÃO WHERE
-    // ==============
     public function where($field, $value)
     {
         $stmt = $this->db()->prepare(
@@ -44,9 +35,6 @@ abstract class Model
         return $stmt->fetchAll();
     }
 
-     // ============================
-    // FUNÇÃO DE CRIAR INFORMAÇÕES
-    // =============================
     public function create($data)
     {
         $fields = [];
@@ -71,9 +59,6 @@ abstract class Model
         return $this->db()->lastInsertId();
     }
 
-    // ==========================================
-    // FUNÇÃO DE ATUALIZAR / EDITAR INFORMAÇÕES
-    // ==========================================
     public function update($id, $data)
     {
         $fields = [];
@@ -96,9 +81,6 @@ abstract class Model
         return $stmt->execute($values);
     }
 
-    // ============================
-    // FUNÇÃO DELETAR INFORMAÇÕES
-    // ============================
     public function delete($id)
     {
         $stmt = $this->db()->prepare(

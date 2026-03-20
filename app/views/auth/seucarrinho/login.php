@@ -8,31 +8,41 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <!-- CSS EXTERNO -->
-    <link rel="stylesheet" href="../public/assets/css/auth.css">
+    <link rel="stylesheet" href="/assets/css/auth.css">
 </head>
 
 <body>
 
     <div class="container">
         <div class="logo-container">
-            <img src="../public/assets/images/logoo_icon.png" alt="Logo">
+            <img src="/assets/images/logoo_icon.png" alt="Logo">
             <h2>Seu<span>Carrinho</span></h2>
         </div>
 
         <p class="subtitle">Bem-vindo de volta! Entre na sua conta.</p>
 
-        <form action="/login" method="POST">
+        <?php if (!empty($_SESSION['error'])): ?>
+            <div style="background:#fee2e2;color:#991b1b;padding:10px;border-radius:8px;margin-bottom:15px;">
+                <?php echo $_SESSION['error'];
+                unset($_SESSION['error']); ?>
+            </div>
+        <?php endif; ?>
+
+        <form action="/seucarrinho/login" method="POST">
+
+            <input type="hidden" name="csrf" value="<?php echo $_SESSION['csrf']; ?>">
+
             <div class="input-group">
                 <label>E-mail</label>
                 <div class="input-wrapper">
-                    <input type="email" name="email" required>
+                    <input type="email" name="email" placeholder="Digite seu email" required>
                 </div>
             </div>
 
             <div class="input-group">
                 <label>Senha</label>
                 <div class="input-wrapper">
-                    <input type="password" name="password" class="password-input" required>
+                    <input type="password" name="password" class="password-input" placeholder="Digite sua senha" required>
                     <span class="toggle-password">
                         <i data-lucide="eye"></i>
                     </span>
@@ -43,7 +53,7 @@
         </form>
 
         <p class="switch-form">
-            Não tem uma conta? <a href="/register">Cadastre-se</a>
+            Não tem uma conta? <a href="/seucarrinho/register">Cadastre-se</a>
         </p>
     </div>
 
@@ -51,7 +61,7 @@
         lucide.createIcons();
 
         document.querySelectorAll('.toggle-password').forEach(toggle => {
-            toggle.addEventListener('click', function () {
+            toggle.addEventListener('click', function() {
                 const input = this.parentElement.querySelector('.password-input');
                 const icon = this.querySelector('i');
 

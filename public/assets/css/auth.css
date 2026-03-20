@@ -1,7 +1,7 @@
 :root {
-    --primary-green: #4ade80;
-    --primary-blue: #3b82f6;
-    --dark-blue: #1e3a8a;
+    --primary-green: #10b981;
+    --primary-blue: #059669;
+    --dark-blue: #006445;
     --gray-100: #f3f4f6;
     --gray-500: #6b7280;
     --white: #ffffff;
@@ -12,7 +12,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
 }
 
 body {
@@ -21,164 +21,79 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    padding: 20px;
 }
 
 .container {
     background: var(--white);
     width: 100%;
-    max-width: 450px;
+    max-width: 420px;
     padding: 40px;
     border-radius: 20px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     text-align: center;
 }
 
-.logo-container {
-    margin-bottom: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-/* --- AJUSTES DA LOGO (Zoom e Border Radius) --- */
 .logo-container img {
-    width: 120px;
-    height: 120px;
+    width: 80px;
+    height: 80px;
     object-fit: cover;
     border-radius: 50%;
-    /* Arredondado moderno */
-    transition: var(--transition);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    margin-bottom: 15px;
 }
 
-.logo-container img:hover {
-    transform: scale(1.1);
-    /* Efeito de zoom no hover */
-}
-
-/* --- ESTILO DO TÍTULO DUAS CORES --- */
 h2 {
     color: var(--dark-blue);
-    /* Cor para "Seu" */
-    margin-bottom: 10px;
-    font-size: 1.8rem;
-    letter-spacing: -0.5px;
     font-weight: 800;
-
 }
 
 h2 span {
     color: var(--primary-blue);
-    /* Cor para "Carrinho" */
 }
 
-p.subtitle {
+.subtitle {
     color: var(--gray-500);
-    font-size: 0.9rem;
-    margin-bottom: 30px;
-}
-
-.form-box {
-    display: none;
-    animation: fadeIn 0.5s ease;
-}
-
-.form-box.active {
-    display: block;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    margin-bottom: 20px;
 }
 
 .input-group {
     margin-bottom: 15px;
     text-align: left;
-    position: relative;
-}
-
-.input-group label {
-    display: block;
-    font-size: 0.85rem;
-    color: var(--dark-blue);
-    margin-bottom: 5px;
-    font-weight: 600;
 }
 
 .input-wrapper {
     position: relative;
-    display: flex;
-    align-items: center;
 }
 
 .input-wrapper input {
     width: 100%;
-    padding: 12px 40px 12px 15px;
-    border: 2px solid var(--gray-100);
+    padding: 12px 40px 12px 12px;
     border-radius: 10px;
-    outline: none;
-    transition: var(--transition);
+    border: 2px solid var(--gray-100);
     background: var(--gray-100);
 }
 
 .input-wrapper input:focus {
     border-color: var(--primary-green);
     background: var(--white);
+    outline: none;
 }
 
 .toggle-password {
     position: absolute;
-    right: 15px;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
     cursor: pointer;
-    color: var(--gray-500);
-    display: flex;
-    align-items: center;
 }
 
 .btn-primary {
     width: 100%;
     padding: 14px;
-    margin-top: 10px;
     border: none;
     border-radius: 10px;
     background: linear-gradient(to right, var(--primary-green), var(--primary-blue));
     color: white;
     font-weight: bold;
-    font-size: 1rem;
     cursor: pointer;
-    transition: var(--transition);
-}
-
-.btn-primary:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
-}
-
-.switch-form {
-    margin-top: 20px;
-    font-size: 0.9rem;
-    color: var(--gray-500);
-}
-
-.switch-form a {
-    color: var(--primary-blue);
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.switch-form a:hover {
-    text-decoration: underline;
 }
 
 .name-grid {
@@ -187,17 +102,32 @@ p.subtitle {
     gap: 10px;
 }
 
-@media (max-width: 480px) {
-    .name-grid {
-        grid-template-columns: 1fr;
-    }
+.switch-form {
+    margin-top: 20px;
+    font-size: 0.9rem;
+}
 
-    .container {
-        padding: 30px 20px;
-    }
+.switch-form a {
+    color: var(--primary-blue);
+    font-weight: bold;
+    text-decoration: none;
+}
 
-    .logo-container img {
-        width: 100px;
-        height: 100px;
-    }
+.password-rules {
+    margin-top: 10px;
+    font-size: 13px;
+    display: none;
+}
+
+.password-rules p {
+    margin: 3px 0;
+    color: #dc2626;
+    /* vermelho */
+    transition: 0.3s;
+}
+
+/* quando válido */
+.password-rules p.valid {
+    color: #16a34a;
+    /* verde */
 }

@@ -1,0 +1,162 @@
+:root {
+    --primary: #10b981;
+    --bg: #f4f7f6;
+    --glass: rgba(255, 255, 255, 0.8);
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg);
+    color: #1e293b;
+}
+
+/* NAVBAR PREMIUM */
+.navbar {
+    background: var(--glass);
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 15px 0;
+}
+
+.nav-icon-btn {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    color: #64748b;
+    transition: all 0.3s;
+    border: none;
+    position: relative;
+}
+
+.nav-icon-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* SEARCH BAR */
+.search-container {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.search-input {
+    border-radius: 15px;
+    border: none;
+    padding: 15px 25px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+    font-size: 1rem;
+}
+
+/* CARDS DAS LISTAS */
+.list-card {
+    background: #fff;
+    border-radius: 20px;
+    border: none;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.02);
+    cursor: pointer;
+    border-left: 5px solid var(--primary);
+}
+
+.list-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+}
+
+.progress {
+    height: 8px;
+    border-radius: 10px;
+    background-color: #f1f5f9;
+    margin: 15px 0;
+}
+
+/* ITENS DA LISTA (EXPANSÃO) */
+.items-section {
+    background: #f8fafc;
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 15px;
+    display: none;
+    /* Inicia escondido */
+}
+
+.item-row {
+    background: white;
+    padding: 12px 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.btn-view-mode {
+    background: #6366f1;
+    color: white;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 600;
+}
+
+/* PAGINAÇÃO */
+.pagination .page-link {
+    border-radius: 10px;
+    margin: 0 3px;
+    border: none;
+    color: #64748b;
+}
+
+.pagination .active .page-link {
+    background-color: var(--primary);
+}
+
+@media (max-width: 768px) {
+    .navbar-brand span {
+        display: none;
+    }
+
+    .list-card {
+        padding: 15px;
+    }
+}
+
+/* LOGO */
+.logo-navbar {
+    width: 35px;
+    height: 35px;
+    object-fit: cover;
+    border-radius: 8px;
+    /* deixa moderno */
+    margin-right: 10px;
+    transition: 0.3s;
+}
+
+.logo-navbar:hover {
+    transform: scale(1.1);
+}
+
+/* TEXTO DA MARCA */
+.brand-text {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+/* CORES SEPARADAS */
+.brand-seu {
+    color: #000000;
+    /* cinza elegante */
+}
+
+.brand-carrinho {
+    color: var(--primary);
+    /* verde do sistema */
+}

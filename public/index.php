@@ -2,6 +2,7 @@
 
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_secure', 0);
 
 session_start();
 
@@ -9,68 +10,46 @@ require_once __DIR__ . '/../app/bootstrap.php';
 
 $router = new Router();
 
-// =====================
-// PÚBLICO
-// =====================
-$router->get('/', [AuthController::class, 'loginForm']);
-$router->get('/register', [AuthController::class, 'registerForm']);
+// ====================
+// ROTAS PÚBLICAS GERAIS
+// ====================
+$router->get('/', [HomeController::class, 'index']);
 
-$router->post('/login', [AuthController::class, 'login']);
-$router->post('/register', [AuthController::class, 'register']);
+// ====================
+// SEU CARRINHO - PÚBLICAS
+// ====================
+$router->get('/seucarrinho', [HomeController::class, 'seucarrinho']);
+
+$router->get('/seucarrinho/login', [AuthController::class, 'loginForm']);
+$router->post('/seucarrinho/login', [AuthController::class, 'login']);
+
+$router->get('/seucarrinho/register', [AuthController::class, 'registerForm']);
+$router->post('/seucarrinho/register', [AuthController::class, 'register']);
 
 
-// =====================
-// USER + ADMIN
-// =====================
-$router->group(['middleware' => 'role:admin,user'], function ($router) {
+// =========================
+// SEU CARRINHO - PRIVADAS
+// =========================
+$router->group(function ($router) {
 
-    // HOME
-    $router->get('/home', [HomeController::class, 'index']);
-    
-    // LISTAS
-    $router->post('/lists/store', [ListController::class, 'store']);
-    $router->post('/lists/delete', [ListController::class, 'delete']);
-    $router->get('/list', [ListController::class, 'show']);
+    // Página principal e logout
+    $router->get('/seucarrinho/home', [CartController::class, 'index']);
+    $router->get('/seucarrinho/logout', [AuthController::class, 'logout']);
 
-    // ITENS
-    $router->get('/items', [ItemController::class, 'index']);
-    $router->post('/items/store', [ItemController::class, 'store']);
-    $router->post('/items/check', [ItemController::class, 'check']);
-    $router->post('/items/delete', [ItemController::class, 'delete']);
+    // Listas
+    $router->get('/seucarrinho/lists', [ListController::class, 'index']);
+    $router->post('/seucarrinho/lists/store', [ListController::class, 'store']);
+    $router->post('/seucarrinho/lists/update', [ListController::class, 'update']);
+    $router->post('/seucarrinho/lists/delete', [ListController::class, 'delete']);
 
-    // SUGESTÃO
-    $router->post('/suggestion/store', [SuggestionController::class, 'store']);
-
-    // AUTOCOMPLETE
-    $router->get('/foods', [ItemController::class, 'foods']);
+    // NOVO: Página individual da lista e gerenciamento de itens
+    $router->get('/seucarrinho/list/view', [ListController::class, 'show']);
+    $router->post('/seucarrinho/list/view', [ListController::class, 'show']);
+    $router->post('/seucarrinho/list/items/store', [ListController::class, 'storeItem']); // criar item
+    $router->post('/seucarrinho/list/items/delete', [ListController::class, 'deleteItem']); // deletar item
 });
 
-
-// =====================
-// ADMIN
-// =====================
-$router->group(['middleware' => 'role:admin'], function ($router) {
-
-    $router->get('/admin', [AdminController::class, 'index']);
-
-    // AUTOCOMPLETE ADMIN
-    $router->get('/admin/foods', [AdminController::class, 'foods']);
-    $router->post('/admin/foods/store', [AdminController::class, 'storeFood']);
-
-    // SUGESTÕES
-    $router->get('/admin/suggestions', [AdminController::class, 'suggestions']);
-    $router->post('/admin/suggestions/approve', [AdminController::class, 'approveSuggestion']);
-    $router->post('/admin/suggestions/deny', [AdminController::class, 'denySuggestion']);
-});
-
-
-// =====================
-// LOGOUT
-// =====================
-$router->get('/logout', [AuthController::class, 'logout']);
-
-
-// =====================
+// ====================
 // DISPATCH
-// =====================
+// ====================
 $router->dispatch();

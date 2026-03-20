@@ -3,114 +3,84 @@
 class Router
 {
     private $routes = [];
-    private $currentMiddleware = [];
+    private $protectedRoutes = [];
+    private $inGroup = false;
 
-    // =====================
-    // GROUP COM MIDDLEWARE
-    // =====================
-    public function group($options, $callback)
+    public function group($callback)
     {
-        $previousMiddleware = $this->currentMiddleware;
-
-        if (isset($options['middleware'])) {
-            $this->currentMiddleware = array_merge(
-                $this->currentMiddleware,
-                (array) $options['middleware']
-            );
-        }
-
+        $this->inGroup = true;
         $callback($this);
-
-        // volta estado anterior
-        $this->currentMiddleware = $previousMiddleware;
+        $this->inGroup = false;
     }
 
-    // =====================
-    // REGISTRO DE ROTAS
-    // =====================
-    public function get($uri, $action, $middleware = [])
+    public function get($uri, $action)
     {
-        $this->addRoute('GET', $uri, $action, $middleware);
+        if ($this->inGroup) {
+            $this->protectedRoutes['GET'][$uri] = $action;
+        } else {
+            $this->routes['GET'][$uri] = $action;
+        }
     }
 
-    public function post($uri, $action, $middleware = [])
+    public function post($uri, $action)
     {
-        $this->addRoute('POST', $uri, $action, $middleware);
+        if ($this->inGroup) {
+            $this->protectedRoutes['POST'][$uri] = $action;
+        } else {
+            $this->routes['POST'][$uri] = $action;
+        }
     }
 
-    private function addRoute($method, $uri, $action, $middleware)
-    {
-        $this->routes[$method][$uri] = [
-            'action' => $action,
-            'middleware' => array_merge(
-                $this->currentMiddleware,
-                (array) $middleware
-            )
-        ];
-    }
-
-    // =====================
-    // DISPATCH
-    // =====================
     public function dispatch()
     {
         $method = $_SERVER['REQUEST_METHOD'];
 
+        // pega somente o caminho da URL
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+        // remove /public se existir
         $uri = str_replace('/public', '', $uri);
+
+        // remove barra no final
         $uri = rtrim($uri, '/');
 
+        // garante que raiz continue sendo /
         if ($uri === '') {
             $uri = '/';
         }
 
-        if (!isset($this->routes[$method][$uri])) {
-            http_response_code(404);
-            require __DIR__ . '/../views/error_pages/404.php';
-            exit;
+        // =================
+        // ROTAS PÚBLICAS
+        // =================
+        if (isset($this->routes[$method][$uri])) {
+            return $this->run($this->routes[$method][$uri]);
         }
 
-        $route = $this->routes[$method][$uri];
+        // =================
+        // ROTAS PROTEGIDAS
+        // =================
+        if (isset($this->protectedRoutes[$method][$uri])) {
 
-        // =====================
-        // EXECUTA MIDDLEWARES
-        // =====================
-        foreach ($route['middleware'] as $middleware) {
-            $this->runMiddleware($middleware);
+            if (!isset($_SESSION['user'])) {
+                http_response_code(403);
+                require __DIR__ . '/../views/error_pages/403.php';
+                exit;
+            }
+
+            return $this->run($this->protectedRoutes[$method][$uri]);
         }
 
-        return $this->run($route['action']);
+        // =================
+        // 404
+        // =================
+        http_response_code(404);
+        require __DIR__ . '/../views/error_pages/404.php';
+        exit;
     }
 
-    // =====================
-    // EXECUTA CONTROLLER
-    // =====================
     private function run($action)
     {
-        if (is_callable($action)) {
-            return $action();
-        }
-
         [$controller, $method] = $action;
         return call_user_func([new $controller, $method]);
-    }
-
-    // =====================
-    // MIDDLEWARE SYSTEM
-    // =====================
-    private function runMiddleware($middleware)
-    {
-        // auth simples
-        if ($middleware === 'auth') {
-            AuthMiddleware::handle();
-            return;
-        }
-
-        // role:admin ou role:user
-        if (str_starts_with($middleware, 'role:')) {
-            $roles = explode(',', str_replace('role:', '', $middleware));
-            AuthMiddleware::handle($roles);
-            return;
-        }
     }
 }

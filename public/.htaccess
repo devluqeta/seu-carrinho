@@ -1,9 +1,6 @@
+Options -MultiViews
 RewriteEngine On
 
-# Remove /public da URL
-RewriteCond %{REQUEST_URI} !^/public/
-
-# Redireciona tudo para index.php
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^ index.php [QSA,L]
+RewriteRule ^(.*)$ index.php [QSA,L]
