@@ -1,0 +1,10 @@
+RewriteEngine On
+
+# redireciona raiz para public internamente
+RewriteRule ^$ public/index.php [L]
+
+# se não existir arquivo ou pasta
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+RewriteRule ^(.*)$ public/$1 [L]

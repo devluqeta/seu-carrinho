@@ -1,24 +1,27 @@
 <?php
-// ==============================================
-// COLOCAR QUALQUER ROTA DE NOVOS ARQUIVOS AQUI
-// ==============================================
+
 date_default_timezone_set('America/Sao_Paulo');
 
-// ===================
-// DATABASE
-// ===================
+// AUTOLOAD
+spl_autoload_register(function ($class) {
+
+    $folders = [
+        __DIR__ . '/core/',
+        __DIR__ . '/models/',
+        __DIR__ . '/controllers/',
+        __DIR__ . '/middlewares/',
+    ];
+
+    foreach ($folders as $folder) {
+        $file = $folder . $class . '.php';
+
+        if (file_exists($file)) {
+            require_once $file;
+            return;
+        }
+    }
+});
+
+// DATABASE CONFIG
 require_once __DIR__ . '/../config/database.php';
-
-// ===================
-// CORE / MIDDLEWARE
-// ===================
-require_once __DIR__ . '/core/Router.php';
-require_once __DIR__ . '/core/Controller.php';
-require_once __DIR__ . '/core/Database.php';
-require_once __DIR__ . '/middleware/AuthMiddleware.php';
-
-// ==============
-// CONTROLLERS
-// ==============
-require_once __DIR__ . '/controllers/HomeController.php';
 
